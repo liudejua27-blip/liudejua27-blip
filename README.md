@@ -1,5 +1,9 @@
 # 刘崇江 · Liu Chongjiang
 
+<p align="center">
+  <img src="./assets/si-network-flow.gif" alt="Human intent flows through Agent Runtime into people, relationships and action" width="100%" />
+</p>
+
 **构建 AI 原生的人际互联即时通讯网络**  
 **Building SI-native social infrastructure for human connection**
 
