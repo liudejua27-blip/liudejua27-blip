@@ -27,18 +27,73 @@ The core problem I work on is the **intent → relationship → action** path: h
 - **Cross-platform projection**：让网站与 iOS 共享统一的结果流、状态和业务事实，保持一个任务在 Agent、事项和消息之间连续。
 - **Open Agent integration**：建设 Streamable HTTP MCP、OAuth、双语 Agent Skill 与 Harness 插件，让外部 Agent 在授权范围内进入同一人际网络。
 
-## 系统视角 · System view
+## 架构视角 · Architecture
+
+系统将**推理、授权、事实、投影和恢复**拆成独立边界：Agent 负责理解与编排，FitMeet 服务负责身份、权限、社交事实和最终写入，网站、iOS 与外部 Agent 共享同一结果来源。
 
 ```mermaid
-flowchart LR
-    A[Human intent] --> B[Pi Agent Runtime]
-    B --> C[Authorized social tools]
-    C --> D[(Domain facts\nand receipts)]
-    D --> E[Web projection]
-    D --> F[iOS projection]
-    E --> G[Conversation\nInvitations\nGroups]
-    F --> G
+flowchart TB
+    H["Human intent · identity · choice"] --> PI
+
+    subgraph RUNTIME["Agent Runtime"]
+      direction LR
+      PI["Pi native session"] --> CTX["Tool selection · context compaction"]
+      CTX --> CKPT["Checkpoint · resume"]
+    end
+
+    subgraph TRUST["Authority & Trust Boundary"]
+      direction LR
+      OAUTH["OAuth scopes · consent"] --> POLICY["Visibility · block · policy"]
+      POLICY --> ACTION["Prepare → confirm · idempotency"]
+    end
+
+    subgraph DOMAIN["Social Domain Services"]
+      direction LR
+      PEOPLE["People · needs · capabilities"] --> GROUPS["Groups · gatherings · invitations"]
+      GROUPS --> MSG["Conversations · messages · memory"]
+    end
+
+    subgraph TRUTH["Product Truth"]
+      direction LR
+      DB[("PostgreSQL facts")] --> REC["Versioned receipts"]
+    end
+
+    subgraph PROJ["Cross-platform Projection"]
+      direction LR
+      RESULT["Unified result flow · SSE"] --> WEB["Web"]
+      RESULT --> IOS["iOS"]
+    end
+
+    subgraph EXTINT["External Agent Integration"]
+      direction LR
+      EXT["External Agent"] --> MCP["Streamable HTTP MCP · bilingual Skill · Harness"]
+    end
+
+    PI --> OAUTH
+    CKPT --> PI
+    MCP --> OAUTH
+    ACTION --> PEOPLE
+    MSG --> DB
+    REC --> RESULT
+
+    classDef human fill:#0b2630,stroke:#5BE7C4,color:#E9FFFF,stroke-width:2px;
+    classDef runtime fill:#141B3A,stroke:#65A7FF,color:#EEF5FF,stroke-width:1.5px;
+    classDef trust fill:#291A38,stroke:#FF4EA8,color:#FFF0FA,stroke-width:1.5px;
+    classDef domain fill:#152D2C,stroke:#5BE7C4,color:#E9FFFF,stroke-width:1.5px;
+    classDef truth fill:#202337,stroke:#B9C5FF,color:#F0F2FF,stroke-width:1.5px;
+    classDef projection fill:#1F2D32,stroke:#78C1FF,color:#EAF7FF,stroke-width:1.5px;
+    classDef external fill:#30251A,stroke:#FFBF61,color:#FFF4DF,stroke-width:1.5px;
+
+    class H human;
+    class PI,CTX,CKPT runtime;
+    class OAUTH,POLICY,ACTION trust;
+    class PEOPLE,GROUPS,MSG domain;
+    class DB,REC truth;
+    class RESULT,WEB,IOS projection;
+    class EXT,MCP external;
 ```
+
+这套边界让社交动作具备可审计的授权链、可恢复的运行状态，以及跨 Web、iOS 和外部 Agent 的一致投影。
 
 ## 主要作品 · Selected work
 
